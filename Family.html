@@ -118,7 +118,7 @@
 
       /* Header Styles */
       .hero-header {
-        text: center;
+        text-align: center;
         margin-bottom: 4rem;
       }
 
@@ -448,10 +448,12 @@
         display: flex;
         gap: 1rem;
         margin-top: 2.5rem;
+        flex-wrap: wrap;
       }
 
       .btn {
         flex: 1;
+        min-width: 200px;
         padding: 1.25rem 2rem;
         border: none;
         border-radius: 1rem;
@@ -477,6 +479,11 @@
         box-shadow: 0 15px 40px rgba(251, 191, 36, 0.5);
         transform: translateY(-2px);
         animation: gradient-shift 3s ease infinite;
+      }
+
+      .btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
       }
 
       .btn-secondary {
@@ -740,8 +747,8 @@
         padding-top: 2rem;
         border-top: 1px solid rgba(251, 191, 36, 0.3);
       }
-      .main-title{
-        text-align:center;
+      .main-title {
+        text-align: center;
       }
 
       .footer-badge {
@@ -1270,6 +1277,47 @@
           }
         };
 
+        const handleDownloadPNG = async () => {
+          setIsGenerating(true);
+          try {
+            const element = invitationRef.current;
+
+            // Use html2canvas to capture the invitation
+            const canvas = await html2canvas(element, {
+              scale: 3,
+              backgroundColor:
+                templateType === "invitation" ? "#020617" : "#fffbeb",
+              logging: false,
+              useCORS: true,
+              windowWidth: element.scrollWidth,
+              windowHeight: element.scrollHeight,
+            });
+
+            // Convert canvas to PNG blob
+            canvas.toBlob(
+              function (blob) {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                const fileName = `Imena_${templateType === "invitation" ? "Invitation" : "Achievement"}_${formData.date}.png`;
+
+                link.href = url;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+              },
+              "image/png",
+              1.0,
+            );
+          } catch (error) {
+            console.error("Error generating PNG:", error);
+            alert("Error generating PNG. Please try again.");
+          } finally {
+            setIsGenerating(false);
+          }
+        };
+
         return (
           <div className="app-container">
             {/* Header */}
@@ -1368,6 +1416,20 @@
                   >
                     <Download />
                     {isGenerating ? "GENERATING..." : "DOWNLOAD PDF"}
+                  </button>
+
+                  <button
+                    onClick={handleDownloadPNG}
+                    className="btn btn-primary"
+                    disabled={isGenerating}
+                    style={{
+                      background:
+                        "linear-gradient(to right, #8b5cf6, #7c3aed, #8b5cf6)",
+                      backgroundSize: "200% auto",
+                    }}
+                  >
+                    <Download />
+                    {isGenerating ? "GENERATING..." : "DOWNLOAD PNG"}
                   </button>
 
                   <button onClick={handleReset} className="btn btn-secondary">
